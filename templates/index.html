@@ -1,0 +1,25 @@
+<html>
+  <head>
+    <title>少量风格字体生成系统</title>
+  </head>
+  <body>
+    <h1>少量风格字体生成系统</h1>
+    <div>
+        <h1>上传少量字体风格.TTF文件/少量风格字体图片文件夹压缩包.zip</h1>
+        <form action="/font_upload" enctype='multipart/form-data' method='POST'>
+        <input type="file" name="file">
+        <tr><td colspan="3" align="left">请选择生成的字体列表:
+          <input type="radio" name="class" id="class1" value="1500" checked="">1500</input>
+          
+          <input type="radio" name="class" id="class2"  value="6864">6864</input>
+          
+          <input type="radio" name="class" id="class3" value="20902">20902</input> 
+          是否微调
+          <input type="radio" name="class1" id="class4" value="yes" checked="checked">是</input> 
+          <input type="radio" name="class1" id="class5" value="no" >否</input> 
+        </td>
+        <input type="submit" value="上传并生成">
+    </div>
+
+  </body>
+</html>

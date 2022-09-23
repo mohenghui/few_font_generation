@@ -1,0 +1,111 @@
+#!/usr/bin/python
+# -*- coding: UTF-8 -*-
+
+'''
+#apt-get install python-fontforge   字体包 ubuntu
+#pip install pypotrace              矢量化potrace
+'''
+import os
+import os.path
+from PIL import ImageEnhance
+
+
+def export(Location, paths, maxWidth, maxHeight):
+    # Begin SVG Template
+    write = '<?xml version="1.0" encoding="UTF-8" standalone="no"?>\n'
+    write += '<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd" >\n'
+    write += '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" viewBox="0 0 ' + str(
+        maxWidth) + ' ' + str(maxHeight) + '">\n'
+    # write +=' <g transform="matrix(1 0 0 -1 0 819)">\n'
+    write += ' <g >\n'
+    write += ' <path fill="currentColor"\n'
+    write += 'd="'
+    write += paths
+    # End SVG Template
+    write += '"/>\n'
+    write += '</g>\n'
+    write += '</svg>'
+    # Write to file
+    file = open(Location, "w")
+    file.write(write)
+    file.close()
+
+
+def bim2path(filePath, encoding,save_path):
+    # paths = ''
+    import potrace
+    import numpy as np
+    from PIL import Image  # #调用库
+    im = Image.open(filePath).convert('1')  # #文件存在的路二值化
+    if im:
+        maxWidth = im.size[0] #获取图片的宽度高度
+        maxHeight = im.size[1]
+        data = np.array(im)  #转成array
+        # Make a numpy array with a rectangle in the middle
+        # data = np.zeros ((32, 32), np.uint32)
+        # data[8:32 - 8, 8:32 - 8] = 1
+        # Create a bitmap from the array
+        bmp = potrace.Bitmap(data) #变成true和false 分解路径
+
+        # Trace the bitmap to a path
+        turdsize = 10  # 通过去除其封闭区域低于给定阈值的所有曲线 
+        # turnpolicy = potrace.TURNPOLICY_BLACK  # 连接黑色（前景）组件
+        alphamax = 25  # 0.5  # 控制跟踪曲线的平滑度。当前默认值为1.0; 此参数的有用范围是从0.0（多边形）到1.3333（无角）。
+        # alphamax = 25 
+        opticurve = 1  # 通过降低贝塞尔曲线段的数量“简化”的最终曲线的布尔标志。Opticurve = 1打开优化，而opticurve = 0。
+        opttolerance = 0.2  # 0.1  # 定义误差的允许在这个简化的量。当前默认值为0.2。较大的值倾向于减少段的数量，但代价是精度较低。有用范围是0到无穷大
+
+        # turdsize = 10  # 通过去除其封闭区域低于给定阈值的所有曲线
+        # turnpolicy = potrace.TURNPOLICY_BLACK  # 连接黑色（前景）组件
+        # alphamax = 1.3  # 0.5  # 控制跟踪曲线的平滑度。当前默认值为1.0; 此参数的有用范围是从0.0（多边形）到1.3333（无角）。
+        # opticurve = 1  # 通过降低贝塞尔曲线段的数量“简化”的最终曲线的布尔标志。Opticurve = 1打开优化，而opticurve = 0。
+        # opttolerance = 5.0  # 0.1  # 定义误差的允许在这个简化的量。当前默认值为0.2。较大的值倾向于减少段的数量，但代价是精度较低。有用范围是0到无穷大
+
+        progress_func = None  # 进度条
+        path = bmp.trace(turdsize=turdsize,
+                         alphamax=alphamax, opticurve=opticurve,
+                         opttolerance=opttolerance)
+        # Iterate over path curves
+        i = 0
+        for curve in path:
+            i += 1
+            if i == 1:
+                continue
+            paths += ' M ' + '%.2f' % (curve.start_point[0]) + ' ' + '%.2f' % (curve.start_point[1])
+            for segment in curve:
+                if segment.is_corner:
+                    end_point_x, end_point_y = segment.end_point
+                    c_x, c_y = segment.c
+                    paths += ' L ' + '%.2f' % (c_x) + ' ' + '%.2f' % (c_y)
+                    paths += ' L ' + '%.2f' % (end_point_x) + ' ' + '%.2f' % (end_point_y)
+                else:
+                    c1_x, c1_y = segment.c1
+                    c2_x, c2_y = segment.c2
+                    end_point_x, end_point_y = segment.end_point
+                    paths += ' C ' + '%.2f' % (c1_x) + ' %.2f' % (c1_y) + ' %.2f' % (c2_x) + ' %.2f' % (
+                        c2_y) + ' %.2f' % (end_point_x) + ' %.2f' % (end_point_y)
+            paths += ' Z '
+        # export('./result/' + encoding + '.svg', paths, maxWidth, maxHeight)
+        if not os.path.exists(save_path): 
+            os.mkdir(save_path)
+        export('./result/' + encoding + '.svg', paths, maxWidth, maxHeight)
+
+
+def generate_svg(save_path):
+    bmpPath = "results/B端24/test_unknown_style_latest/images/AaYanSong"
+    print("正在批量生成svg文件...")
+    list = os.listdir(bmpPath)
+    for i in range(0, len(list)):
+        path = os.path.join(bmpPath, list[i])
+        if os.path.isfile(path):
+            encoding = list[i].split(".")[0]
+            bim2path(path, encoding,save_path)
+            print(i)
+    print("生成完毕")
+
+
+if __name__ == "__main__":
+    # 生成单张svg文件到svg_test文件夹，第一个参数是要转化的图片，第二个参数为生成的svg文件名称
+    # bim2path("bmp_test/555.png", "123")
+    # 若要批量转换图片，则运行此函数，图片都放在batch_bmp中即可
+    generate_svg("./result")
