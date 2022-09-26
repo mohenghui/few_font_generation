@@ -1,5 +1,6 @@
 # few_font_generation   
-[模型与数据集链接: ](https://pan.baidu.com/s/19Q8KY5f5aqWxLKsZzIlzZA) 提取码: jnp4    
+[模型与数据集链接: ](https://pan.baidu.com/s/19Q8KY5f5aqWxLKsZzIlzZA) 提取码: jnp4     
+[仪品网盘](http://file.ypfont.com:8081/dzzoffice/index.php?mod=explorer#group&do=file&gid=36&fid=39451)     
 **解压后放在文件夹中即可**   
 # flask客户端   
 python app.py   
